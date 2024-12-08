@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
+	twitterscraper "github.com/TheAhmadOsman/twitter-scraper"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	twitterscraper "github.com/imperatrona/twitter-scraper"
 )
 
 var cmpOptions = cmp.Options{
