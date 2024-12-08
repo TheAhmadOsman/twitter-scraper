@@ -1,7 +1,9 @@
 package twitterscraper
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 )
 
@@ -24,6 +26,24 @@ func (s *Scraper) FollowUser(screenName string) error {
     var response struct{}
     err = s.RequestAPI(req, &response)
     if err != nil {
+        var apiError struct {
+            Errors []struct {
+                Code    int    `json:"code"`
+                Message string `json:"message"`
+            } `json:"errors"`
+        }
+        if jsonErr := json.Unmarshal([]byte(err.Error()), &apiError); jsonErr == nil {
+            for _, e := range apiError.Errors {
+                switch e.Code {
+                case 160: // Already following
+                    return fmt.Errorf("Already following user: %s", screenName)
+                case 161: // User is protected
+                    return fmt.Errorf("User %s is protected", screenName)
+                default:
+                    return fmt.Errorf("Error following user: %s - %s", screenName, e.Message)
+                }
+            }
+        }
         return err
     }
 
