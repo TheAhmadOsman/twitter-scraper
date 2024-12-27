@@ -148,12 +148,12 @@ func (s *Scraper) getFlowToken(data map[string]interface{}) (string, error) {
 }
 
 // IsLoggedIn check if scraper logged in
-func (s *Scraper) IsLoggedIn() bool {
+func (s *Scraper) IsLoggedIn() (bool, error) {
 	s.isLogged = true
 	s.setBearerToken(bearerToken1)
 	req, err := http.NewRequest("GET", "https://api.twitter.com/1.1/account/verify_credentials.json", nil)
 	if err != nil {
-		return false
+		return false, err
 	}
 	var verify verifyCredentials
 	err = s.RequestAPI(req, &verify)
@@ -163,7 +163,7 @@ func (s *Scraper) IsLoggedIn() bool {
 	} else {
 		s.isLogged = true
 	}
-	return s.isLogged
+	return s.isLogged, nil
 }
 
 // randomDelay introduces a random delay between 1 and 3 seconds
