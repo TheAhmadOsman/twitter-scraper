@@ -42,6 +42,8 @@ func TestGetProfile(t *testing.T) {
 		cmpopts.IgnoreFields(twitterscraper.Profile{}, "LikesCount"),
 		cmpopts.IgnoreFields(twitterscraper.Profile{}, "ListedCount"),
 		cmpopts.IgnoreFields(twitterscraper.Profile{}, "TweetsCount"),
+		cmpopts.IgnoreFields(twitterscraper.Profile{}, "MediaCount"),
+		cmpopts.IgnoreFields(twitterscraper.Profile{}, "NormalFollowersCount"),
 	}
 	if diff := cmp.Diff(sample, profile, cmpOptions...); diff != "" {
 		t.Error("Resulting profile does not match the sample", diff)
@@ -94,6 +96,8 @@ func TestGetProfilePrivate(t *testing.T) {
 		cmpopts.IgnoreFields(twitterscraper.Profile{}, "LikesCount"),
 		cmpopts.IgnoreFields(twitterscraper.Profile{}, "ListedCount"),
 		cmpopts.IgnoreFields(twitterscraper.Profile{}, "TweetsCount"),
+		cmpopts.IgnoreFields(twitterscraper.Profile{}, "MediaCount"),
+		cmpopts.IgnoreFields(twitterscraper.Profile{}, "NormalFollowersCount"),
 	}
 	if diff := cmp.Diff(sample, profile, cmpOptions...); diff != "" {
 		t.Error("Resulting profile does not match the sample", diff)
@@ -146,7 +150,7 @@ func TestGetProfileByID(t *testing.T) {
 }
 
 func TestGetUserIDByScreenName(t *testing.T) {
-	userID, err := testScraper.GetUserIDByScreenName("Twitter")
+	userID, err := testScraper.GetUserIDByScreenName("X")
 	if err != nil {
 		t.Errorf("getUserByScreenName() error = %v", err)
 	}

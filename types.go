@@ -10,6 +10,14 @@ type (
 		Name     string
 	}
 
+	// Url represents a URL with display, expanded, and index data.
+	Url struct {
+		DisplayURL  string `json:"display_url"`
+		ExpandedURL string `json:"expanded_url"`
+		URL         string `json:"url"`
+		Indices     []int  `json:"indices"`
+	}
+
 	// Photo type.
 	Photo struct {
 		ID  string
@@ -91,6 +99,25 @@ type (
 		GIFs      []GIF
 	}
 
+	ExtendedMedia struct {
+		IDStr                    string `json:"id_str"`
+		MediaURLHttps            string `json:"media_url_https"`
+		ExtSensitiveMediaWarning struct {
+			AdultContent    bool `json:"adult_content"`
+			GraphicViolence bool `json:"graphic_violence"`
+			Other           bool `json:"other"`
+		} `json:"ext_sensitive_media_warning"`
+		Type      string `json:"type"`
+		URL       string `json:"url"`
+		VideoInfo struct {
+			Variants []struct {
+				Type    string `json:"content_type"`
+				Bitrate int    `json:"bitrate"`
+				URL     string `json:"url"`
+			} `json:"variants"`
+		} `json:"video_info"`
+	}
+
 	legacyTweet struct {
 		ConversationIDStr string `json:"conversation_id_str"`
 		CreatedAt         string `json:"created_at"`
@@ -105,10 +132,7 @@ type (
 				Type          string `json:"type"`
 				URL           string `json:"url"`
 			} `json:"media"`
-			URLs []struct {
-				ExpandedURL string `json:"expanded_url"`
-				URL         string `json:"url"`
-			} `json:"urls"`
+			URLs         []Url `json:"urls"`
 			UserMentions []struct {
 				IDStr      string `json:"id_str"`
 				Name       string `json:"name"`
@@ -116,24 +140,7 @@ type (
 			} `json:"user_mentions"`
 		} `json:"entities"`
 		ExtendedEntities struct {
-			Media []struct {
-				IDStr                    string `json:"id_str"`
-				MediaURLHttps            string `json:"media_url_https"`
-				ExtSensitiveMediaWarning struct {
-					AdultContent    bool `json:"adult_content"`
-					GraphicViolence bool `json:"graphic_violence"`
-					Other           bool `json:"other"`
-				} `json:"ext_sensitive_media_warning"`
-				Type      string `json:"type"`
-				URL       string `json:"url"`
-				VideoInfo struct {
-					Variants []struct {
-						Type    string `json:"content_type"`
-						Bitrate int    `json:"bitrate"`
-						URL     string `json:"url"`
-					} `json:"variants"`
-				} `json:"video_info"`
-			} `json:"media"`
+			Media []ExtendedMedia `json:"media"`
 		} `json:"extended_entities"`
 		IDStr                 string `json:"id_str"`
 		InReplyToStatusIDStr  string `json:"in_reply_to_status_id_str"`
@@ -166,22 +173,37 @@ type (
 				} `json:"urls"`
 			} `json:"url"`
 		} `json:"entities"`
-		FavouritesCount      int      `json:"favourites_count"`
-		FollowersCount       int      `json:"followers_count"`
-		FriendsCount         int      `json:"friends_count"`
-		IDStr                string   `json:"id_str"`
-		ListedCount          int      `json:"listed_count"`
-		Name                 string   `json:"name"`
-		Location             string   `json:"location"`
-		PinnedTweetIdsStr    []string `json:"pinned_tweet_ids_str"`
-		ProfileBannerURL     string   `json:"profile_banner_url"`
-		ProfileImageURLHTTPS string   `json:"profile_image_url_https"`
-		Protected            bool     `json:"protected"`
-		ScreenName           string   `json:"screen_name"`
-		StatusesCount        int      `json:"statuses_count"`
-		Verified             bool     `json:"verified"`
-		FollowedBy           bool     `json:"followed_by"`
-		Following            bool     `json:"following"`
+		FavouritesCount         int      `json:"favourites_count"`
+		FollowersCount          int      `json:"followers_count"`
+		FriendsCount            int      `json:"friends_count"`
+		IDStr                   string   `json:"id_str"`
+		ListedCount             int      `json:"listed_count"`
+		Name                    string   `json:"name"`
+		Location                string   `json:"location"`
+		PinnedTweetIdsStr       []string `json:"pinned_tweet_ids_str"`
+		ProfileBannerURL        string   `json:"profile_banner_url"`
+		ProfileImageURLHTTPS    string   `json:"profile_image_url_https"`
+		Protected               bool     `json:"protected"`
+		ScreenName              string   `json:"screen_name"`
+		StatusesCount           int      `json:"statuses_count"`
+		Verified                bool     `json:"verified"`
+		FollowedBy              bool     `json:"followed_by"`
+		Following               bool     `json:"following"`
+		CanDm                   bool     `json:"can_dm"`
+		CanMediaTag             bool     `json:"can_media_tag"`
+		DefaultProfile          bool     `json:"default_profile"`
+		DefaultProfileImage     bool     `json:"default_profile_image"`
+		FastFollowersCount      int      `json:"fast_followers_count"`
+		HasCustomTimelines      bool     `json:"has_custom_timelines"`
+		IsTranslator            bool     `json:"is_translator"`
+		MediaCount              int      `json:"media_count"`
+		NeedsPhoneVerification  bool     `json:"needs_phone_verification"`
+		NormalFollowersCount    int      `json:"normal_followers_count"`
+		PossiblySensitive       bool     `json:"possibly_sensitive"`
+		ProfileInterstitialType string   `json:"profile_interstitial_type"`
+		TranslatorType          string   `json:"translator_type"`
+		WantRetweets            bool     `json:"want_retweets"`
+		WithheldInCountries     []string `json:"withheld_in_countries"`
 	}
 
 	legacyUserV2 struct {
@@ -195,15 +217,10 @@ type (
 		Description         string `json:"description"`
 		Entities            struct {
 			Description struct {
-				Urls []interface{} `json:"urls"`
+				Urls []Url `json:"urls"`
 			} `json:"description"`
 			URL struct {
-				Urls []struct {
-					DisplayURL  string `json:"display_url"`
-					ExpandedURL string `json:"expanded_url"`
-					URL         string `json:"url"`
-					Indices     []int  `json:"indices"`
-				} `json:"urls"`
+				Urls []Url `json:"urls"`
 			} `json:"url"`
 		} `json:"entities"`
 		FastFollowersCount      int           `json:"fast_followers_count"`
@@ -246,4 +263,37 @@ type (
 
 	fetchProfileFunc func(query string, maxProfilesNbr int, cursor string) ([]*Profile, string, error)
 	fetchTweetFunc   func(query string, maxTweetsNbr int, cursor string) ([]*Tweet, string, error)
+
+	legacyExtendedProfile struct {
+		Birthdate struct {
+			Day            int    `json:"day"`
+			Month          int    `json:"month"`
+			Year           int    `json:"year"`
+			Visibility     string `json:"visibility"`
+			YearVisibility string `json:"year_visibility"`
+		} `json:"birthdate"`
+	}
+
+	verificationInfo struct {
+		IsIdentityVerified bool `json:"is_identity_verified"`
+		Reason             struct {
+			Description struct {
+				Text     string `json:"text"`
+				Entities []struct {
+					FromIndex int `json:"from_index"`
+					ToIndex   int `json:"to_index"`
+					Ref       struct {
+						URL     string `json:"url"`
+						URLType string `json:"url_type"`
+					} `json:"ref"`
+				} `json:"entities"`
+			} `json:"description"`
+			VerifiedSinceMsec string `json:"verified_since_msec"`
+		} `json:"reason"`
+	}
+
+	highlightsInfo struct {
+		CanHighlightTweets bool   `json:"can_highlight_tweets"`
+		HighlightedTweets  string `json:"highlighted_tweets"`
+	}
 )

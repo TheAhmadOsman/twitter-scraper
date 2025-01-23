@@ -14,38 +14,46 @@ var cacheIDs sync.Map
 
 // Profile of twitter user.
 type Profile struct {
-	Avatar         string
-	Banner         string
-	Biography      string
-	Birthday       string
-	FollowersCount int
-	FollowingCount int
-	FriendsCount   int
-	IsPrivate      bool
-	IsVerified     bool
-	Joined         *time.Time
-	LikesCount     int
-	ListedCount    int
-	Location       string
-	Name           string
-	PinnedTweetIDs []string
-	TweetsCount    int
-	URL            string
-	UserID         string
-	Username       string
-	Website        string
-	Sensitive      bool
-	Following      bool
-	FollowedBy     bool
+	Avatar               string
+	Banner               string
+	Biography            string
+	Birthday             string
+	FollowersCount       int
+	FollowingCount       int
+	FriendsCount         int
+	IsPrivate            bool
+	IsVerified           bool
+	IsBlueVerified       bool
+	Joined               *time.Time
+	LikesCount           int
+	ListedCount          int
+	Location             string
+	Name                 string
+	PinnedTweetIDs       []string
+	TweetsCount          int
+	URL                  string
+	UserID               string
+	Username             string
+	Website              string
+	Sensitive            bool
+	Following            bool
+	FollowedBy           bool
+	MediaCount           int
+	FastFollowersCount   int
+	NormalFollowersCount int
+	ProfileImageShape    string
+	HasGraduatedAccess   bool
+	CanHighlightTweets   bool
 }
 
 type user struct {
 	Data struct {
 		User struct {
 			Result struct {
-				RestID  string     `json:"rest_id"`
-				Legacy  legacyUser `json:"legacy"`
-				Message string     `json:"message"`
+				RestID         string     `json:"rest_id"`
+				Legacy         legacyUser `json:"legacy"`
+				Message        string     `json:"message"`
+				IsBlueVerified bool       `json:"is_blue_verified"`
 			} `json:"result"`
 		} `json:"user"`
 	} `json:"data"`
@@ -111,7 +119,9 @@ func (s *Scraper) GetProfile(username string) (Profile, error) {
 		return Profile{}, fmt.Errorf("either @%s does not exist or is private", username)
 	}
 
-	return parseProfile(jsn.Data.User.Result.Legacy), nil
+	profile := parseProfile(jsn.Data.User.Result.Legacy)
+	profile.IsBlueVerified = jsn.Data.User.Result.IsBlueVerified
+	return profile, nil
 }
 
 func (s *Scraper) GetProfileByID(userID string) (Profile, error) {
@@ -168,7 +178,9 @@ func (s *Scraper) GetProfileByID(userID string) (Profile, error) {
 		return Profile{}, fmt.Errorf("either @%s does not exist or is private", userID)
 	}
 
-	return parseProfile(jsn.Data.User.Result.Legacy), nil
+	profile := parseProfile(jsn.Data.User.Result.Legacy)
+	profile.IsBlueVerified = jsn.Data.User.Result.IsBlueVerified
+	return profile, nil
 }
 
 // GetUserIDByScreenName from API

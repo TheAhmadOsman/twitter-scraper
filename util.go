@@ -157,6 +157,7 @@ func parseLegacyTweet(user *legacyUser, tweet *legacyTweet) *Tweet {
 	if tweetID == "" {
 		return nil
 	}
+	text := expandURLs(tweet.FullText, tweet.Entities.URLs, tweet.ExtendedEntities.Media)
 	username := user.ScreenName
 	name := user.Name
 	tw := &Tweet{
@@ -167,7 +168,7 @@ func parseLegacyTweet(user *legacyUser, tweet *legacyTweet) *Tweet {
 		PermanentURL:   fmt.Sprintf("https://twitter.com/%s/status/%s", username, tweetID),
 		Replies:        tweet.ReplyCount,
 		Retweets:       tweet.RetweetCount,
-		Text:           tweet.FullText,
+		Text:           text,
 		UserID:         tweet.UserIDStr,
 		Username:       username,
 	}
@@ -307,7 +308,7 @@ func parseLegacyTweet(user *legacyUser, tweet *legacyTweet) *Tweet {
 	tw.HTML = reTwitterURL.ReplaceAllStringFunc(tw.HTML, func(tco string) string {
 		for _, entity := range tweet.Entities.URLs {
 			if tco == entity.URL {
-				return fmt.Sprintf(`<a href="%s">%s</a>`, entity.ExpandedURL, tco)
+				return fmt.Sprintf(`<a href="%s">%s</a>`, entity.ExpandedURL, entity.ExpandedURL)
 			}
 		}
 		for _, entity := range tweet.ExtendedEntities.Media {
@@ -345,25 +346,28 @@ func parseLegacyTweet(user *legacyUser, tweet *legacyTweet) *Tweet {
 
 func parseProfile(user legacyUser) Profile {
 	profile := Profile{
-		Avatar:         user.ProfileImageURLHTTPS,
-		Banner:         user.ProfileBannerURL,
-		Biography:      user.Description,
-		FollowersCount: user.FollowersCount,
-		FollowingCount: user.FavouritesCount,
-		FriendsCount:   user.FriendsCount,
-		IsVerified:     user.Verified,
-		IsPrivate:      user.Protected,
-		LikesCount:     user.FavouritesCount,
-		ListedCount:    user.ListedCount,
-		Location:       user.Location,
-		Name:           user.Name,
-		PinnedTweetIDs: user.PinnedTweetIdsStr,
-		TweetsCount:    user.StatusesCount,
-		URL:            "https://twitter.com/" + user.ScreenName,
-		UserID:         user.IDStr,
-		Username:       user.ScreenName,
-		FollowedBy:     user.FollowedBy,
-		Following:      user.Following,
+		Avatar:               user.ProfileImageURLHTTPS,
+		Banner:               user.ProfileBannerURL,
+		Biography:            user.Description,
+		FollowersCount:       user.FollowersCount,
+		FollowingCount:       user.FavouritesCount,
+		FriendsCount:         user.FriendsCount,
+		IsVerified:           user.Verified,
+		IsPrivate:            user.Protected,
+		LikesCount:           user.FavouritesCount,
+		ListedCount:          user.ListedCount,
+		Location:             user.Location,
+		Name:                 user.Name,
+		PinnedTweetIDs:       user.PinnedTweetIdsStr,
+		TweetsCount:          user.StatusesCount,
+		URL:                  "https://twitter.com/" + user.ScreenName,
+		UserID:               user.IDStr,
+		Username:             user.ScreenName,
+		FollowedBy:           user.FollowedBy,
+		Following:            user.Following,
+		MediaCount:           user.MediaCount,
+		FastFollowersCount:   user.FastFollowersCount,
+		NormalFollowersCount: user.NormalFollowersCount,
 	}
 
 	tm, err := time.Parse(time.RubyDate, user.CreatedAt)
@@ -379,28 +383,44 @@ func parseProfile(user legacyUser) Profile {
 	return profile
 }
 
+func expandURLs(text string, urls []Url, extendedMediaEntities []ExtendedMedia) string {
+	expandedText := text
+	for _, url := range urls {
+		expandedText = strings.ReplaceAll(expandedText, url.URL, url.ExpandedURL)
+	}
+	for _, entity := range extendedMediaEntities {
+		expandedText = strings.ReplaceAll(expandedText, entity.URL, entity.MediaURLHttps)
+	}
+
+	return expandedText
+}
+
 func parseProfileV2(user userResult) Profile {
 	u := user.Legacy
+	description := expandURLs(u.Description, u.Entities.Description.Urls, []ExtendedMedia{})
 	profile := Profile{
-		Avatar:         u.ProfileImageURLHTTPS,
-		Banner:         u.ProfileBannerURL,
-		Biography:      u.Description,
-		FollowersCount: u.FollowersCount,
-		FollowingCount: u.FavouritesCount,
-		FriendsCount:   u.FriendsCount,
-		IsVerified:     u.Verified,
-		LikesCount:     u.FavouritesCount,
-		ListedCount:    u.ListedCount,
-		Location:       u.Location,
-		Name:           u.Name,
-		PinnedTweetIDs: u.PinnedTweetIdsStr,
-		TweetsCount:    u.StatusesCount,
-		URL:            "https://twitter.com/" + u.ScreenName,
-		UserID:         user.ID,
-		Username:       u.ScreenName,
-		Sensitive:      u.PossiblySensitive,
-		Following:      u.Following,
-		FollowedBy:     u.FollowedBy,
+		Avatar:             u.ProfileImageURLHTTPS,
+		Banner:             u.ProfileBannerURL,
+		Biography:          description,
+		FollowersCount:     u.FollowersCount,
+		FollowingCount:     u.FavouritesCount,
+		FriendsCount:       u.FriendsCount,
+		IsVerified:         u.Verified,
+		IsBlueVerified:     user.IsBlueVerified,
+		ProfileImageShape:  user.ProfileImageShape,
+		HasGraduatedAccess: user.HasGraduatedAccess,
+		LikesCount:         u.FavouritesCount,
+		ListedCount:        u.ListedCount,
+		Location:           u.Location,
+		Name:               u.Name,
+		PinnedTweetIDs:     u.PinnedTweetIdsStr,
+		TweetsCount:        u.StatusesCount,
+		URL:                "https://twitter.com/" + u.ScreenName,
+		UserID:             user.ID,
+		Username:           u.ScreenName,
+		Sensitive:          u.PossiblySensitive,
+		Following:          u.Following,
+		FollowedBy:         u.FollowedBy,
 	}
 
 	tm, err := time.Parse(time.RubyDate, u.CreatedAt)

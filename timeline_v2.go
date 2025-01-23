@@ -60,14 +60,21 @@ func (result *result) parse() *Tweet {
 }
 
 type userResult struct {
-	Typename                   string       `json:"__typename"`
-	ID                         string       `json:"id"`
-	RestID                     string       `json:"rest_id"`
-	AffiliatesHighlightedLabel struct{}     `json:"affiliates_highlighted_label"`
-	HasGraduatedAccess         bool         `json:"has_graduated_access"`
-	IsBlueVerified             bool         `json:"is_blue_verified"`
-	ProfileImageShape          string       `json:"profile_image_shape"`
-	Legacy                     legacyUserV2 `json:"legacy"`
+	Typename                   string                `json:"__typename"`
+	ID                         string                `json:"id"`
+	RestID                     string                `json:"rest_id"`
+	AffiliatesHighlightedLabel struct{}              `json:"affiliates_highlighted_label"`
+	HasGraduatedAccess         bool                  `json:"has_graduated_access"`
+	IsBlueVerified             bool                  `json:"is_blue_verified"`
+	ProfileImageShape          string                `json:"profile_image_shape"`
+	Legacy                     legacyUserV2          `json:"legacy"`
+	LegacyExtendedProfile      legacyExtendedProfile `json:"legacy_extended_profile"`
+	IsProfileTranslatable      bool                  `json:"is_profile_translatable"`
+	VerificationInfo           verificationInfo      `json:"verification_info"`
+	HighlightsInfo             highlightsInfo        `json:"highlights_info"`
+	UserSeedTweetCount         int                   `json:"user_seed_tweet_count"`
+	PremiumGiftingEligible     bool                  `json:"premium_gifting_eligible"`
+	CreatorSubscriptionsCount  int                   `json:"creator_subscriptions_count"`
 }
 
 func (result *userResult) parse() Profile {
